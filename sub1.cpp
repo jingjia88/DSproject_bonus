@@ -20,9 +20,13 @@ struct data{
 };
 unordered_map<string,struct neighbor*> map;
 unordered_map<string,struct data> place;
+string start;vector<string> ans; int limit;
 
 void min(string);
 string read(ifstream&,int);
+void next(int,struct neighbor*,vector<string>,int,int);
+void Maxhappy(int,int);
+
 int main(int argc,char* argv[]){
     string argf = argv[1];
     string arg = "./"+argf+"/tp.data";
@@ -32,46 +36,69 @@ int main(int argc,char* argv[]){
         cout<<"Something wrong"<<endl;
         return 1;
     }
-    int nodes,edges,total;
-    infile>>nodes>>edges>>total;
-
+    int nodes,edges,total,ready;
+    infile>>nodes>>edges>>total>>ready;
+    limit = total+ready;
     //count shortest path 
-    string start = read(infile,nodes);
+    start = read(infile,nodes);
     min(start);
 
-    // unordered_map<string,struct data>::iterator iter;
-    // for(iter = place.begin();iter!=place.end();iter++){
-    //     cout<<iter->first<<" "<<iter->second.shortest;
-    // }
-
     //count value
+    Maxhappy(total,ready);
+
+    string arg1 = "./"+argf+"/ans1.txt";
+    ofstream outfile(arg1.c_str());
+    
+    int cost = atoi(ans[ans.size()-2].c_str())-atoi(ans[1].c_str());
+    outfile << ans[ans.size()-1] <<" "<< cost << '\n';
+    for (int i = 0; i < ans.size()-1; i+=2)
+        outfile<<ans[i]<<" "<<ans[i+1]<<" "<<ans[i+1]<< '\n';
+
+    infile.close();
+    outfile.close();
 }
 
-void Maxhappy(int total,string start){
-    vector<string> ans;int maxhappy;
-    unordered_map<string,struct data>::iterator iter;
-    for(iter = place.begin();iter!=place.end();iter++){
-        iter->second.visit = false;
-    }
-    ans.push_back(start); place.find(start)->second.visit=true;
+void Maxhappy(int total,int ready){
+    int maxhappy = 0;
     struct neighbor* here = map.find(start)->second;
     while(here!=NULL){
-        next(total,here,ans,0);
+        unordered_map<string,struct data>::iterator iter;
+        for(iter = place.begin();iter!=place.end();iter++){
+            iter->second.visit = false;
+        }
+        if((total-(here->dist)) >= place.find(here->node)->second.shortest){
+            place.find(start)->second.visit=true;
+            vector<string> res;
+            int max=place.find(start)->second.happy;
+            res.push_back(start); 
+            res.push_back(to_string(ready));
+            next(total,here,res,max,ready);
+        }
         here = here->next;
-    }
+    } 
 }
-void next(int total,struct neighbor* here,vector<string> ans,int happy){
+void next(int total,struct neighbor* here,vector<string> res,int max,int now){
+    if(place.find(here->node)->second.visit == false){
+        max+=place.find(here->node)->second.happy; 
+    }
     place.find(here->node)->second.visit = true;
-    total -=here->dist; ans.push_back(here->node);
+    now = now + here->dist;
+    res.push_back(here->node); res.push_back(to_string(now));
     struct neighbor* go = map.find(here->node)->second;
     while(go!=NULL){
-        if(total-go->dist>place.find(go->node)->second.shortest){
-            if(place.find(go->node)->second.visit == false){
-                happy+=place.find(go->node)->second.happy;
-            }
-            next(total,go,ans,happy);
-        } 
+        if(total-(go->dist)>=place.find(go->node)->second.shortest){
+            total = total-(go->dist);
+            next(total,go,res,max,now);
+        }
         go = go->next;
+    }
+    if(res[res.size()-2]==start){
+        res.push_back(to_string(max));
+        if(ans.empty()){
+            ans = res;
+        }else if(atoi(res[res.size()-1].c_str())> atoi(ans[ans.size()-1].c_str())){
+            ans = res;
+        }
     }
 }
 
@@ -89,6 +116,8 @@ void min(string n){
             if(t_short==-1){
                 t_short = iter->dist+ f_short;
                 q.push(iter->node);
+            }else if(t_short > iter->dist+ f_short){
+                t_short = iter->dist+ f_short;
             }
             iter = iter->next;
         }

@@ -3,6 +3,7 @@
         "iosfwd": "cpp",
         "unordered_map": "cpp",
         "limits": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "ostream": "cpp"
     }
 }
