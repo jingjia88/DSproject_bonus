@@ -72,7 +72,7 @@ void Maxhappy(int total,int ready){
             int max=place.find(start)->second.happy;
             res.push_back(start); 
             res.push_back(to_string(ready));
-            next(total,here,res,max,ready);
+            next(total-(here->dist),here,res,max,ready);
         }
         here = here->next;
     } 
@@ -85,10 +85,9 @@ void next(int total,struct neighbor* here,vector<string> res,int max,int now){
     now = now + here->dist;
     res.push_back(here->node); res.push_back(to_string(now));
     struct neighbor* go = map.find(here->node)->second;
-    while(go!=NULL){
+    while(go!=NULL){//cout<<here->node<<" "<<go->node<<"kkk"<<total<<endl;
         if(total-(go->dist)>=place.find(go->node)->second.shortest){
-            total = total-(go->dist);
-            next(total,go,res,max,now);
+            next(total-(go->dist),go,res,max,now);
         }
         go = go->next;
     }
