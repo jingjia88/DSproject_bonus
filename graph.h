@@ -7,6 +7,7 @@ using namespace std;
 struct data{
     int happy,index;
     int open,close,shortest;
+    bool visit;
 };
 class Graph{
     public:
