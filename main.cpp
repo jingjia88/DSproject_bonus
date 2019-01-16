@@ -10,7 +10,7 @@ vector<string> convert;
 vector<vector<int> > gra;
 vector<pair<string,int>> ans;
 vector<pair<string,int>> ans0;
-string start;int total_time,ready;
+string start;int total_time,ready,best;
 
 void road(int,int,vector<pair<string,int>>,int,map<string,struct data>);
 void road0(int,int,vector<pair<string,int>>,int,map<string,struct data>);
@@ -40,16 +40,26 @@ int main(int argc,char* argv[]){
     //index convert to name
     map<string, struct data>:: iterator itr; 
     convert.resize(m.size());
-    for (itr=m.begin(); itr != m.end(); itr++)
+    for (itr=m.begin(); itr != m.end(); itr++){
         convert[itr->second.index] =itr->first;
+        best+=itr->second.happy;
+    }
 
     //count shortest path
     for(int i=0;i<nodes;i++){
         start = convert[i];
         g.dijkstra(gra,start,m);
         //find road
-        maxHappy(nodes,m);
         maxHappy_0(nodes,m);
+    }
+    string arg3="./"+arg+"/ans1.txt";
+    writeFile(arg3,ans0);
+
+    for(int i=0;i<nodes;i++){
+        start = convert[i];
+        g.dijkstra(gra,start,m);
+        //find road
+        maxHappy(nodes,m);
     }
 
     printout(ans);cout<<endl<<endl;
@@ -57,9 +67,7 @@ int main(int argc,char* argv[]){
 
     //output ans2
     string arg2="./"+arg+"/ans2.txt";
-    string arg3="./"+arg+"/ans1.txt";
     writeFile(arg2,ans);
-    writeFile(arg3,ans0);
 
     infile.close();
 }
@@ -84,13 +92,23 @@ void maxHappy_0(int nodes,map<string,struct data> m){
         map<string, struct data>:: iterator itr; 
         for (itr=m.begin(); itr != m.end(); itr++)
             itr->second.visit=false;
-        
+        //if can go to other node,else stay at first node
         if(gra[start_i][j]>0 && (total_time-gra[start_i][j]) > m.find(start)->second.shortest){
             vector<pair<string,int>> res;
             res.push_back(make_pair(start,ready));
             m.find(start)->second.visit=true;
             road0(total_time-gra[start_i][j],j,res,m.find(start)->second.happy,m);
+        }else{
+            if(ans0.empty()){
+                ans0.push_back(make_pair(start,ready));
+                ans0.push_back(make_pair("final_grade",m.find(start)->second.happy));
+            }else if(ans0[ans0.size()-1].second<m.find(start)->second.happy){
+                ans0.clear();
+                ans0.push_back(make_pair(start,ready));
+                ans0.push_back(make_pair("final_grade",m.find(start)->second.happy));
+            }
         }
+        if(!ans0.empty() && ans0[ans0.size()-1].second==best) return;
     }
 }
 void road0(int limit,int v,vector<pair<string,int>> res,int grade,map<string,struct data> m){
@@ -105,11 +123,12 @@ void road0(int limit,int v,vector<pair<string,int>> res,int grade,map<string,str
         m.find(Vname)->second.visit=true;
     }
     //go to next node
-    for(int i=0;i<m.size();i++){
+    for(int i=m.size()-1;i>=0;i--){
         string Iname = convert[i];
-        if(gra[v][i]==0) continue; 
+        if(gra[v][i]==0||grade==best) continue; 
         if((limit-gra[v][i]) >= m.find(Iname)->second.shortest)
             road0(limit-gra[v][i],i,res,grade,m);
+        if(grade==best&&res[res.size()-1].first==start) break;
     }
     //update best answer
     if(res[res.size()-1].first==start ){
@@ -121,6 +140,7 @@ void road0(int limit,int v,vector<pair<string,int>> res,int grade,map<string,str
         }else if(res[res.size()-1].second==ans0[ans0.size()-1].second && res.size()<ans0.size()){
             ans0 = res;
         }
+        if(ans0[ans0.size()-1].second==best) return;
     }
 }
 
@@ -140,7 +160,21 @@ void maxHappy(int nodes,map<string,struct data> m){
             }else{
                 road(total_time-gra[start_i][j],j,res,0,m);
             }
+        }else{
+            if(ans.empty()){
+                if(ready>=m.find(start)->second.open && ready<=m.find(start)->second.close){
+                    ans.push_back(make_pair(start,ready));
+                    ans.push_back(make_pair("final_grade",m.find(start)->second.happy));
+                }
+            }else if(ans[ans.size()-1].second<m.find(start)->second.happy){
+                if(ready>=m.find(start)->second.open && ready<=m.find(start)->second.close){
+                    ans.clear();
+                    ans.push_back(make_pair(start,ready));
+                    ans.push_back(make_pair("final_grade",m.find(start)->second.happy));
+                }
+            }
         }
+        if(!ans.empty() && ans[ans.size()-1].second==best) return;
     }
 }
 void road(int limit,int v,vector<pair<string,int>> res,int grade,map<string,struct data> m){
@@ -157,8 +191,9 @@ void road(int limit,int v,vector<pair<string,int>> res,int grade,map<string,stru
         m.find(Vname)->second.visit=true;
     }
     //go to next node
-    for(int i=0;i<m.size();i++){
+    for(int i=m.size()-1;i>=0;i--){
         string Iname = convert[i];
+        if(grade>0.8*best&&res[res.size()-1].first==start) break;
         if(gra[v][i]==0 && Vname!=Iname) continue; 
         if(v==i){
             int wait = m.find(Iname)->second.open-res[res.size()-1].second;
@@ -180,6 +215,8 @@ void road(int limit,int v,vector<pair<string,int>> res,int grade,map<string,stru
         }else if(res[res.size()-1].second==ans[ans.size()-1].second && res.size()<ans.size()){
             ans = res;
         }
+        if(ans[ans.size()-1].second==best) return;
+        printout(ans);
     }
 }
 

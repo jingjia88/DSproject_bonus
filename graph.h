@@ -79,7 +79,7 @@ class Graph{
         //printSolution(m);
     } 
 
-    int printSolution(map<string,struct data> &m) 
+    void printSolution(map<string,struct data> &m) 
     { 
         cout<<"Vertex   Distance from Source"<<endl; 
         map<string, struct data>:: iterator itr; 
