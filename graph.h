@@ -11,7 +11,7 @@ struct data{
 };
 class Graph{
     public:
-    string readData(ifstream &infile,int nodes,int edges,map<string,struct data> &m,vector<vector<int>> &graph){
+    string readData(ifstream &infile,int nodes,int edges,map<string,struct data> &m,vector<vector<int> > &graph){
         string s; getline(infile,s);string star;
         //read nodes
         for(int i=0;i<nodes;i++){
@@ -50,7 +50,7 @@ class Graph{
         return min_index; 
     } 
     
-    void dijkstra(vector<vector<int>> graph,string src,map<string,struct data> &m) 
+    void dijkstra(vector<vector<int> > graph,string src,map<string,struct data> &m) 
     {
         vector<bool> sptSet(graph.size(),false);
         // Distance of source vertex from itself is always 0 

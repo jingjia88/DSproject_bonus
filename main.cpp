@@ -8,16 +8,16 @@ using namespace std;
  
 vector<string> convert;
 vector<vector<int> > gra;
-vector<pair<string,int>> ans;
-vector<pair<string,int>> ans0;
+vector<pair<string,int> > ans;
+vector<pair<string,int> > ans0;
 string start;int total_time,ready,best;
 
-void road(int,int,vector<pair<string,int>>,int,map<string,struct data>);
-void road0(int,int,vector<pair<string,int>>,int,map<string,struct data>);
+void road(int,int,vector<pair<string,int> >,int,map<string,struct data>);
+void road0(int,int,vector<pair<string,int> >,int,map<string,struct data>);
 void maxHappy(int,map<string,struct data>);
 void maxHappy_0(int,map<string,struct data>);
-void writeFile(string,vector<pair<string,int>>);
-void printout(vector<pair<string,int>> s){
+void writeFile(string,vector<pair<string,int> >);
+void printout(vector<pair<string,int> > s){
     for(int i=0;i<s.size();i++){
         cout<<s[i].first<<" "<<s[i].second<<endl;
     }
@@ -51,19 +51,21 @@ int main(int argc,char* argv[]){
         g.dijkstra(gra,start,m);
         //find road
         maxHappy_0(nodes,m);
+        if(!ans0.empty() && ans0[ans0.size()-1].second==best) break;
     }
     string arg3="./"+arg+"/ans1.txt";
     writeFile(arg3,ans0);
-
+printout(ans0);
     for(int i=0;i<nodes;i++){
         start = convert[i];
         g.dijkstra(gra,start,m);
         //find road
         maxHappy(nodes,m);
+        if(!ans.empty() && ans[ans.size()-1].second==best) break;
     }
 
     printout(ans);cout<<endl<<endl;
-    printout(ans0);
+    
 
     //output ans2
     string arg2="./"+arg+"/ans2.txt";
@@ -71,7 +73,7 @@ int main(int argc,char* argv[]){
 
     infile.close();
 }
-void writeFile(string arg,vector<pair<string,int>> s){
+void writeFile(string arg,vector<pair<string,int> > s){
     ofstream outfile(arg.c_str());
     int usedTime = s[s.size()-2].second-ready;
 
@@ -94,7 +96,7 @@ void maxHappy_0(int nodes,map<string,struct data> m){
             itr->second.visit=false;
         //if can go to other node,else stay at first node
         if(gra[start_i][j]>0 && (total_time-gra[start_i][j]) > m.find(start)->second.shortest){
-            vector<pair<string,int>> res;
+            vector<pair<string,int> > res;
             res.push_back(make_pair(start,ready));
             m.find(start)->second.visit=true;
             road0(total_time-gra[start_i][j],j,res,m.find(start)->second.happy,m);
@@ -110,8 +112,9 @@ void maxHappy_0(int nodes,map<string,struct data> m){
         }
         if(!ans0.empty() && ans0[ans0.size()-1].second==best) return;
     }
+    return;
 }
-void road0(int limit,int v,vector<pair<string,int>> res,int grade,map<string,struct data> m){
+void road0(int limit,int v,vector<pair<string,int> > res,int grade,map<string,struct data> m){
     int u = m.find(res[res.size()-1].first)->second.index;
     string Vname=convert[v],Uname=convert[u];
 
@@ -120,28 +123,28 @@ void road0(int limit,int v,vector<pair<string,int>> res,int grade,map<string,str
     res.push_back(make_pair(Vname,now));
     if(m.find(Vname)->second.visit==false){
         grade+=m.find(Vname)->second.happy;
-        m.find(Vname)->second.visit=true;
+    }
+    m.find(Vname)->second.visit=true;
+    //update best answer
+    if(res[res.size()-1].first==start ){
+        if(ans0.empty()){
+            ans0 = res; 
+            ans0.push_back(make_pair("final_grade",grade));
+        }else if(grade> ans0[ans0.size()-1].second){
+            ans0 = res; 
+            ans0.push_back(make_pair("final_grade",grade));
+        }
+        if(ans0[ans0.size()-1].second==best) return;
     }
     //go to next node
     for(int i=m.size()-1;i>=0;i--){
         string Iname = convert[i];
-        if(gra[v][i]==0||grade==best) continue; 
+        if(gra[v][i]==0) continue; 
         if((limit-gra[v][i]) >= m.find(Iname)->second.shortest)
             road0(limit-gra[v][i],i,res,grade,m);
         if(grade==best&&res[res.size()-1].first==start) break;
     }
-    //update best answer
-    if(res[res.size()-1].first==start ){
-        res.push_back(make_pair("final_grade",grade));
-        if(ans0.empty()){
-            ans0 = res;
-        }else if(res[res.size()-1].second> ans0[ans0.size()-1].second){
-            ans0 = res;
-        }else if(res[res.size()-1].second==ans0[ans0.size()-1].second && res.size()<ans0.size()){
-            ans0 = res;
-        }
-        if(ans0[ans0.size()-1].second==best) return;
-    }
+    return;
 }
 
 void maxHappy(int nodes,map<string,struct data> m){
@@ -152,7 +155,7 @@ void maxHappy(int nodes,map<string,struct data> m){
             itr->second.visit=false;
         
         if(gra[start_i][j]>0 && (total_time-gra[start_i][j]) > m.find(start)->second.shortest){
-            vector<pair<string,int>> res;
+            vector<pair<string,int> > res;
             res.push_back(make_pair(start,ready));
             m.find(start)->second.visit=true;
             if(ready>=m.find(start)->second.open && ready<=m.find(start)->second.close){
@@ -176,8 +179,10 @@ void maxHappy(int nodes,map<string,struct data> m){
         }
         if(!ans.empty() && ans[ans.size()-1].second==best) return;
     }
+    return;
 }
-void road(int limit,int v,vector<pair<string,int>> res,int grade,map<string,struct data> m){
+void road(int limit,int v,vector<pair<string,int> > res,int grade,map<string,struct data> m){
+    if(limit<=0) return;
     int u = m.find(res[res.size()-1].first)->second.index;
     string Vname=convert[v],Uname=convert[u];
 
@@ -189,35 +194,47 @@ void road(int limit,int v,vector<pair<string,int>> res,int grade,map<string,stru
                                                     && m.find(Vname)->second.visit==false){
         grade+=m.find(Vname)->second.happy;
         m.find(Vname)->second.visit=true;
+    } 
+    //update best answer
+    if(res[res.size()-1].first==start ){
+        if(ans.empty()){
+            ans = res; 
+            ans.push_back(make_pair("final_grade",grade));
+        }else if(grade> ans[ans.size()-1].second){
+            ans = res; 
+            ans.push_back(make_pair("final_grade",grade));
+        }
+        if(!ans.empty() && ans[ans.size()-1].second==best) return;
     }
     //go to next node
     for(int i=m.size()-1;i>=0;i--){
         string Iname = convert[i];
-        if(grade>0.8*best&&res[res.size()-1].first==start) break;
         if(gra[v][i]==0 && Vname!=Iname) continue; 
-        if(v==i){
-            int wait = m.find(Iname)->second.open-res[res.size()-1].second;
-            if((limit-wait) >= m.find(Iname)->second.shortest && wait>0){
-                road(limit-wait,i,res,grade,m);
+        if(m.find(Iname)->second.visit==false && m.find(Iname)->second.open<res[res.size()-1].second){
+            if(v==i){
+                if(m.find(Iname)->second.visit==true) continue;
+                int wait = m.find(Iname)->second.open-res[res.size()-1].second;
+                if((limit-wait) >= m.find(Iname)->second.shortest && wait>0){
+                    road(limit-wait,i,res,grade,m);
+                }
+            }else{
+                if((limit-gra[v][i]) >= m.find(Iname)->second.shortest)
+                    road(limit-gra[v][i],i,res,grade,m);
             }
         }else{
-            if((limit-gra[v][i]) >= m.find(Iname)->second.shortest)
-                road(limit-gra[v][i],i,res,grade,m);
+            if(v==i){
+                if(m.find(Iname)->second.visit==true) continue;
+                int wait = m.find(Iname)->second.open-res[res.size()-1].second;
+                if((limit-wait) >= m.find(Iname)->second.shortest && wait>0){
+                    road(limit-wait,i,res,grade,m);
+                }
+            }else{
+                if((limit-gra[v][i]) >= m.find(Iname)->second.shortest)
+                    road(limit-gra[v][i],i,res,grade,m);
+            }
         }
     }
-    //update best answer
-    if(res[res.size()-1].first==start ){
-        res.push_back(make_pair("final_grade",grade));
-        if(ans.empty()){
-            ans = res;
-        }else if(res[res.size()-1].second> ans[ans.size()-1].second){
-            ans = res;
-        }else if(res[res.size()-1].second==ans[ans.size()-1].second && res.size()<ans.size()){
-            ans = res;
-        }
-        if(ans[ans.size()-1].second==best) return;
-        printout(ans);
-    }
+    return;
 }
 
 
