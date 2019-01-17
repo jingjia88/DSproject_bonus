@@ -210,28 +210,15 @@ void road(int limit,int v,vector<pair<string,int> > res,int grade,map<string,str
     for(int i=m.size()-1;i>=0;i--){
         string Iname = convert[i];
         if(gra[v][i]==0 && Vname!=Iname) continue; 
-        if(m.find(Iname)->second.visit==false && m.find(Iname)->second.open<res[res.size()-1].second){
-            if(v==i){
-                if(m.find(Iname)->second.visit==true) continue;
-                int wait = m.find(Iname)->second.open-res[res.size()-1].second;
-                if((limit-wait) >= m.find(Iname)->second.shortest && wait>0){
-                    road(limit-wait,i,res,grade,m);
-                }
-            }else{
-                if((limit-gra[v][i]) >= m.find(Iname)->second.shortest)
-                    road(limit-gra[v][i],i,res,grade,m);
+        if(v==i){
+            if(m.find(Iname)->second.visit==true) continue;
+            int wait = m.find(Iname)->second.open-res[res.size()-1].second;
+            if((limit-wait) >= m.find(Iname)->second.shortest && wait>0){
+                road(limit-wait,i,res,grade,m);
             }
         }else{
-            if(v==i){
-                if(m.find(Iname)->second.visit==true) continue;
-                int wait = m.find(Iname)->second.open-res[res.size()-1].second;
-                if((limit-wait) >= m.find(Iname)->second.shortest && wait>0){
-                    road(limit-wait,i,res,grade,m);
-                }
-            }else{
-                if((limit-gra[v][i]) >= m.find(Iname)->second.shortest)
-                    road(limit-gra[v][i],i,res,grade,m);
-            }
+            if((limit-gra[v][i]) >= m.find(Iname)->second.shortest)
+                road(limit-gra[v][i],i,res,grade,m);
         }
     }
     return;
